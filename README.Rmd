@@ -1,0 +1,69 @@
+---
+title: "README"
+author: "Mark Ravina"
+date: "`r Sys.Date()`"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# sfhelper
+
+License: MIT
+
+For more information please contact mark.ravina@austin.utexasedu
+
+## Installation
+
+To install from GitHub use the devtools package
+
+```{r eval=FALSE}
+devtools::install_github("histmr/sfhelper")
+```
+## Functions
+
+### geolocate()
+
+The geolocate() function takes a data frame with a column of place names (toponyms) and a column of regions, specified by their two-digits ISO codes. The defualt colums names are "place" and "iso". The function uses the API of the World Historical Gazeteer (https://whgazetteer.org/) to generate a four column data frame with the toponym, ISO code, longitude, and latitude. Many toponyms will retrun multple hits. You will probably want to import a data frame, but here's an example of a data frame create within R
+
+```{r}
+library(sfhelper)
+df <- data.frame("place"=c("Tokyo","Edo","Prague","Prague"),"iso"=c("JP","JP","CZ",""))
+geolocate(df,place,iso)
+```
+
+### st_transform_meridian
+
+Changing the meridian when re-projecting sf object often creates broken polygons and other unwanted artifacts. This function repairs most common errors. For example, using the map  from **rnaturalearth**,**st_transform_repair()** corrects for the new meridian.
+
+```{r}
+library("rnaturalearth")
+library("tidyverse")
+library("sf")
+
+world.sf <- ne_countries(scale = "medium", returnclass = "sf")
+
+new_crs <- "+proj=moll +lat_1=-10 +lon_0=-70"
+
+new.sf <- st_transform(x = world.sf, crs = new_crs)
+ggplot() + geom_sf(data=new.sf)
+
+new.sf <- st_transform_repair(x = world.sf, crs= new_crs)
+ggplot() + geom_sf(data=new.sf)
+```
+
+For the orthographic projection ... 
+
+```{r}
+new_crs <- "+proj=ortho +lat_0=40 +lon_0=-12"
+ggplot() + geom_sf(data= world.sf %>% st_transform(new_crs))
+```
+
+...**st_transform_repair** fixes the broken polygons
+
+```{r}
+ggplot() + geom_sf(data=world.sf %>% st_transform_repair(new_crs))
+```
+
