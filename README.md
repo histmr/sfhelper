@@ -45,27 +45,12 @@ create within R
 
 Changing the meridian when re-projecting sf object often creates broken
 polygons and other unwanted artifacts. This function repairs most common
-errors. For example, using the map from
-**rnaturalearth**,**st\_transform\_repair()** corrects for the new
-meridian.
+errors. For example, using the map from **rnaturalearth**, the
+**st\_transform\_repair()** function corrects for the new meridian.
 
     library("rnaturalearth")
     library("tidyverse")
-
-    ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-    ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
-    ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
-    ## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
-    ## ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
-    ## ✔ purrr     1.0.2     
-    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-    ## ✖ dplyr::filter() masks stats::filter()
-    ## ✖ dplyr::lag()    masks stats::lag()
-    ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-
     library("sf")
-
-    ## Linking to GEOS 3.11.0, GDAL 3.5.3, PROJ 9.1.0; sf_use_s2() is TRUE
 
     world.sf <- ne_countries(scale = "medium", returnclass = "sf")
 
@@ -77,32 +62,55 @@ meridian.
 ![](README_files/figure-markdown_strict/unnamed-chunk-3-1.png)
 
     new.sf <- st_transform_repair(x = world.sf, crs= new_crs)
-
-    ## Spherical geometry (s2) switched off
-    ## although coordinates are longitude/latitude, st_intersection assumes that they
-    ## are planar
-
-    ## Warning: attribute variables are assumed to be spatially constant throughout
-    ## all geometries
-
-    ## Spherical geometry (s2) switched on
-
     ggplot() + geom_sf(data=new.sf)
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-3-2.png)
 
-For the orthographic projection …
+In an orthographic projection, the US disappears if we re-project to
+“+proj=ortho +lat\_0=40 +lon\_0=-12”.
 
     new_crs <- "+proj=ortho +lat_0=40 +lon_0=-12"
     ggplot() + geom_sf(data= world.sf %>% st_transform(new_crs))
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-4-1.png)
 
-…**st\_transform\_repair** fixes the broken polygons
+The **st\_transform\_repair()** fixes the broken polygons
 
     ggplot() + geom_sf(data=world.sf %>% st_transform_repair(new_crs))
 
-    ## Warning in st_cast.sf(., "LINESTRING", do_split = TRUE): repeating attributes
-    ## for all sub-geometries for which they may not be constant
-
 ![](README_files/figure-markdown_strict/unnamed-chunk-5-1.png)
+
+### st\_transform\_outline
+
+As in the examples above, re-projected maps sometimes lack an “edge of
+the globe” graticule line. The **st\_transform\_outline()** function
+generates that line as an **sf** object. Using with **fill** in
+**ggplot()**, the new object can be used to represent oceans. At present
+it does NOT work for orthographic projections with changes in
+**+lat\_0=0**
+
+    new_crs <- "+proj=ortho +lat_0=0 +lon_0=-12"
+    ggplot() + 
+      geom_sf(data=st_transform_outline(new_crs), fill="lightblue") +
+      geom_sf(data=world.sf %>% st_transform_repair(new_crs))
+
+![](README_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+
+    new_crs <- "+proj=eck4 +lon_0=-70"
+    ggplot() + 
+        geom_sf(data=st_transform_outline(new_crs), fill="lightblue") +
+        geom_sf(data=world.sf %>% st_transform_repair(new_crs))
+
+![](README_files/figure-markdown_strict/unnamed-chunk-6-2.png)
+
+These transforms make the graticule disappear, but we can restore it
+with **st\_graticule()**
+
+    new_crs <- "+proj=ortho +lon_0=-20"
+    new.sf <- world.sf %>% st_transform_repair(new_crs)
+    new_graticule.sf <- st_graticule(new.sf) %>% st_transform(new_crs)
+    ggplot() + geom_sf(data=st_transform_outline(crs=new_crs), fill="lightblue") +
+      geom_sf(data=new.sf) +
+      geom_sf(data=new_graticule.sf, color="white", linewidth=0.3, alpha=0.7)
+
+![](README_files/figure-markdown_strict/unnamed-chunk-7-1.png)

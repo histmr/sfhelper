@@ -2,6 +2,7 @@
 title: "README"
 author: "Mark Ravina"
 date: "`r Sys.Date()`"
+# output: html_document
 output: md_document
 ---
 
@@ -36,9 +37,9 @@ geolocate(df,place,iso)
 
 ### st_transform_meridian
 
-Changing the meridian when re-projecting sf object often creates broken polygons and other unwanted artifacts. This function repairs most common errors. For example, using the map  from **rnaturalearth**,**st_transform_repair()** corrects for the new meridian.
+Changing the meridian when re-projecting sf object often creates broken polygons and other unwanted artifacts. This function repairs most common errors. For example, using the map  from **rnaturalearth**, the **st_transform_repair()** function corrects for the new meridian.
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 library("rnaturalearth")
 library("tidyverse")
 library("sf")
@@ -54,16 +55,44 @@ new.sf <- st_transform_repair(x = world.sf, crs= new_crs)
 ggplot() + geom_sf(data=new.sf)
 ```
 
-For the orthographic projection ... 
+In an orthographic projection, the US disappears if we re-project to "+proj=ortho +lat_0=40 +lon_0=-12".
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 new_crs <- "+proj=ortho +lat_0=40 +lon_0=-12"
 ggplot() + geom_sf(data= world.sf %>% st_transform(new_crs))
 ```
 
-...**st_transform_repair** fixes the broken polygons
+The **st_transform_repair()** fixes the broken polygons
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 ggplot() + geom_sf(data=world.sf %>% st_transform_repair(new_crs))
+```
+
+### st_transform_outline
+
+As in the examples above, re-projected maps sometimes lack an "edge of the globe" graticule line. The **st_transform_outline()** function generates that line as an **sf** object. Using with **fill** in **ggplot()**, the new object can be used to represent oceans. At present it does NOT work for orthographic projections with changes in **+lat_0=0**
+
+```{r, warning=FALSE,message=FALSE}
+new_crs <- "+proj=ortho +lat_0=0 +lon_0=-12"
+ggplot() + 
+  geom_sf(data=st_transform_outline(new_crs), fill="lightblue") +
+  geom_sf(data=world.sf %>% st_transform_repair(new_crs))
+
+
+new_crs <- "+proj=eck4 +lon_0=-70"
+ggplot() + 
+    geom_sf(data=st_transform_outline(new_crs), fill="lightblue") +
+    geom_sf(data=world.sf %>% st_transform_repair(new_crs))
+```
+
+These transforms make the graticule disappear, but we can restore it with **st_graticule()**
+
+```{r, warning=FALSE,message=FALSE}
+new_crs <- "+proj=ortho +lon_0=-20"
+new.sf <- world.sf %>% st_transform_repair(new_crs)
+new_graticule.sf <- st_graticule(new.sf) %>% st_transform(new_crs)
+ggplot() + geom_sf(data=st_transform_outline(crs=new_crs), fill="lightblue") +
+  geom_sf(data=new.sf) +
+  geom_sf(data=new_graticule.sf, color="white", linewidth=0.3, alpha=0.7)
 ```
 
