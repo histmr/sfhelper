@@ -2,7 +2,7 @@
 
 License: MIT
 
-For more information please contact <mark.ravina@austin.utexasedu>
+For more information please contact <mark.ravina@austin.utexas.edu>
 
 ## Installation
 
@@ -41,7 +41,7 @@ create within R
     ## 12 Bohemia  NULL  14.4333 50.1000
     ## 13   Praha  NULL -93.5667 44.5333
 
-### st\_transform\_meridian
+### st\_transform\_repair
 
 Changing the meridian when re-projecting sf object often creates broken
 polygons and other unwanted artifacts. This function repairs most common

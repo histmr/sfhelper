@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 License: MIT
 
-For more information please contact mark.ravina@austin.utexasedu
+For more information please contact mark.ravina@austin.utexas.edu
 
 ## Installation
 
@@ -35,7 +35,7 @@ df <- data.frame("place"=c("Tokyo","Edo","Prague","Prague"),"iso"=c("JP","JP","C
 geolocate(df,place,iso)
 ```
 
-### st_transform_meridian
+### st_transform_repair
 
 Changing the meridian when re-projecting sf object often creates broken polygons and other unwanted artifacts. This function repairs most common errors. For example, using the map  from **rnaturalearth**, the **st_transform_repair()** function corrects for the new meridian.
 
