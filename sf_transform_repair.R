@@ -13,13 +13,16 @@
 #' @keywords meridian
 
 st_transform_repair <- function(x,crs){
-  if(stringr::str_detect(crs,"ortho")){
+  if(!is.character(crs)){ ## check if st_crs() function is used
+    crs = crs$input}else{
+    }
+    if(stringr::str_detect(crs,"ortho")){ ## check for ortho
     temp.sf <- sf::st_cast(x, 'MULTILINESTRING') %>%
     sf::st_cast('LINESTRING', do_split=TRUE) %>%
     sf::st_transform(crs = crs)
     temp.sf$npts = mapview::npts(temp.sf$geometry, by_feature = TRUE)
     temp.sf <- temp.sf %>% dplyr::filter(npts > 3) %>%
-      sf::st_cast('POLYGON')  
+      sf::st_cast('POLYGON')
   }else{
   anti_meridian <- stringr::str_extract(crs, "\\lon_0=-{0,1}\\d{1,3}") ## step by step regex
   anti_meridian <- stringr::str_replace(anti_meridian, "lon_0=","")
