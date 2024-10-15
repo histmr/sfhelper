@@ -16,12 +16,12 @@ To install from GitHub use the devtools package
 
 The geolocate() function takes a data frame with a column of place names
 (toponyms) and a column of regions, specified by their two-digits ISO
-codes. The defualt colums names are “place” and “iso”. The function uses
+codes. The default colums names are “place” and “iso”. The function uses
 the API of the World Historical Gazeteer (<https://whgazetteer.org/>) to
 generate a four column data frame with the toponym, ISO code, longitude,
-and latitude. Many toponyms will retrun multple hits. You will probably
+and latitude. Many toponyms will return multiple hits. You will probably
 want to import a data frame, but here’s an example of a data frame
-create within R
+created within R
 
     library(sfhelper)
     df <- data.frame("place"=c("Tokyo","Edo","Prague","Prague"),"iso"=c("JP","JP","CZ",""))
@@ -43,10 +43,11 @@ create within R
 
 ### st\_transform\_repair
 
-Changing the meridian when re-projecting sf object often creates broken
+Changing the meridian when re-projecting sf objects often creates broken
 polygons and other unwanted artifacts. This function repairs most common
-errors. For example, using the map from **rnaturalearth**, the
-**st\_transform\_repair()** function corrects for the new meridian.
+errors. For example, when re-projecting the world map from
+**rnaturalearth**, the **st\_transform\_repair()** function corrects for
+the new meridian.
 
     library("rnaturalearth")
     library("tidyverse")
