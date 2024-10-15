@@ -14,8 +14,8 @@ st_transform_outline <- function(crs){
   anti_meridian <- as.numeric(stringr::str_replace(anti_meridian, "\\s",""))
   anti_meridian <- ifelse(is.na(anti_meridian),0,anti_meridian) ## zero is no new prime meridian
 
-  new_equator <- stringr::str_extract(crs, "\\lon_0=-{0,1}\\d{1,3}") ## step by step regex
-  new_equator <- stringr::str_replace(new_equator, "lon_0=","")
+  new_equator <- stringr::str_extract(crs, "\\lat_0=-{0,1}\\d{1,3}") ## step by step regex
+  new_equator <- stringr::str_replace(new_equator, "lat_0=","")
   new_equator <- as.numeric(stringr::str_replace(new_equator, "\\s",""))
   new_equator <- ifelse(is.na(new_equator),0,new_equator) ## zero is no new prime meridian
 
