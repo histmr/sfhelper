@@ -8,7 +8,13 @@
 #' @keywords spatial
 #' @keywords map
 
+
 st_transform_outline <- function(crs){
+  if(is.character(crs)){
+   crs=crs
+  }else{
+   crs=eval(st_crs(crs))$input 
+  }
   anti_meridian <- stringr::str_extract(crs, "\\lon_0=-{0,1}\\d{1,3}") ## step by step regex
   anti_meridian <- stringr::str_replace(anti_meridian, "lon_0=","")
   anti_meridian <- as.numeric(stringr::str_replace(anti_meridian, "\\s",""))
