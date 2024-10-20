@@ -13,10 +13,11 @@
 #' @keywords meridian
 
 st_transform_repair <- function(x,crs){
+  x <- x |> sf::st_make_valid() |> sf::st_transform(4326)
   if(!is.character(crs)){ ## check if st_crs() function is used
     crs = crs$input}else{
     }
-    if(stringr::str_detect(crs,"ortho")){ ## check for ortho
+  if(stringr::str_detect(crs,"ortho")){ ## check for ortho
     temp.sf <- sf::st_cast(x, 'MULTILINESTRING') %>%
     sf::st_cast('LINESTRING', do_split=TRUE) %>%
     sf::st_transform(crs = crs)

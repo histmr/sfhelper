@@ -21,6 +21,11 @@ This function uses the API for the World Historical Gazeteer to geolocate place 
 It takes the place name and region as inputs and returns a data frame with results,
 primarily the longitude and latitude.
 }
+\examples{
+# Search for Paris and Edo (now Tokyo)
+example.df <- data.frame("place" = c("Paris","Edo"), "iso" = c("FR","JP"))
+geolocate(example.df)
+}
 \keyword{map}
 \keyword{sf}
 \keyword{spatial}

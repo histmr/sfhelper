@@ -16,12 +16,12 @@ To install from GitHub use the devtools package
 
 The geolocate() function takes a data frame with a column of place names
 (toponyms) and a column of regions, specified by their two-digits ISO
-codes. The default colums names are “place” and “iso”. The function uses
+codes. The defualt colums names are “place” and “iso”. The function uses
 the API of the World Historical Gazeteer (<https://whgazetteer.org/>) to
 generate a four column data frame with the toponym, ISO code, longitude,
-and latitude. Many toponyms will return multiple hits. You will probably
+and latitude. Many toponyms will retrun multple hits. You will probably
 want to import a data frame, but here’s an example of a data frame
-created within R
+create within R
 
     library(sfhelper)
     df <- data.frame("place"=c("Tokyo","Edo","Prague","Prague"),"iso"=c("JP","JP","CZ",""))
@@ -43,15 +43,15 @@ created within R
 
 ### st\_transform\_repair
 
-Changing the meridian when re-projecting sf objects often creates broken
+Changing the meridian when re-projecting sf object often creates broken
 polygons and other unwanted artifacts. This function repairs most common
-errors. For example, when re-projecting the world map from
-**rnaturalearth**, the **st\_transform\_repair()** function corrects for
-the new meridian.
+errors. For example, using the map from **rnaturalearth**, the
+**st\_transform\_repair()** function corrects for the new meridian.
 
-    library("rnaturalearth")
-    library("tidyverse")
-    library("sf")
+    library(rnaturalearth)
+    library(tidyverse)
+    library(sf)
+    library(cowplot)
 
     world.sf <- ne_countries(scale = "medium", returnclass = "sf")
 
@@ -115,3 +115,40 @@ with **st\_graticule()**
       geom_sf(data=new_graticule.sf, color="white", linewidth=0.3, alpha=0.7)
 
 ![](README_files/figure-markdown_strict/unnamed-chunk-7-1.png)
+
+### st\_equal\_grid()
+
+This function was inspired by Daniel Immerwahr’s *How to Hide an Empire*
+(2019), in which he combines,at the same scale, non-contiguous US states
+and territories. This is approach useful for appreciating the relative
+areas of different state, countries, etc. Following Immerwahr, let’s
+show the continental US, Alaska, Hawaii, and the Philippines at the same
+scale. The **st\_equal\_grid()** function takes a list of **sf**
+objects, all with projected coordinates in the same units. You can
+(likely will want to) use different projections for different places,
+but they must all be in the same units
+
+    library(spData)
+
+    ## To access larger datasets in this package, install the spDataLarge
+    ## package with: `install.packages('spDataLarge',
+    ## repos='https://nowosad.github.io/drat/', type='source')`
+
+    logo.sf <- us_states %>% 
+      st_transform("+proj=lcc +lon_0=-90 +lat_1=33 +lat_2=45") %>% 
+      st_union()## continental US
+    alaska.sf <- alaska %>% 
+      st_transform("+proj=aea +lat_0=50 +lon_0=-154 +lat_1=55 +lat_2=65 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs") %>% st_union()
+    hawaii.sf <- hawaii %>% st_transform("+proj=utm +zone=32") %>% st_union()
+
+    world_ne.sf <- st_as_sf(ne_countries(scale="medium"))
+    philippines.sf <- world_ne.sf %>% filter(sov_a3=="PHL") %>% st_union() %>% st_transform(3121) # https://epsg.io/3121
+
+    places <- list(logo.sf,alaska.sf,hawaii.sf,philippines.sf)
+    plot_list  <- st_equal_grid(places)
+
+To visualize the plots in a grid, use the **cowplot** package
+
+    cowplot::plot_grid(plotlist = plot_list, ncol = 4)
+
+![](README_files/figure-markdown_strict/unnamed-chunk-9-1.png)

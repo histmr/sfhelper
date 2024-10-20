@@ -13,7 +13,10 @@
 #' @keywords sf
 #' @keywords spatial
 #' @keywords map
-
+#' @examples
+#' # Search for Paris and Edo (now Tokyo)
+#' example.df <- data.frame("place" = c("Paris","Edo"), "iso" = c("FR","JP"))
+#' geolocate(example.df)
 geolocate <- function(df,place="place",iso="iso"){
   base_df <- data.frame("toponym"=NA,"codes"=NA,"long"=NA,"lat"=NA)
   for(i in 1:nrow(df)){
