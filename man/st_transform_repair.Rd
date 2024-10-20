@@ -7,7 +7,7 @@
 st_transform_repair(x, crs)
 }
 \arguments{
-\item{x}{An sf object}
+\item{x}{An sf object with unprojected coordinates}
 
 \item{crs}{The crs for transforming the sf}
 }
