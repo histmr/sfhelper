@@ -2,8 +2,8 @@
 title: "README"
 author: "Mark Ravina"
 date: "`r Sys.Date()`"
-# output: html_document
-output: md_document
+output: html_document
+# output: md_document
 ---
 
 ```{r setup, include=FALSE}
@@ -40,9 +40,10 @@ geolocate(df,place,iso)
 Changing the meridian when re-projecting sf object often creates broken polygons and other unwanted artifacts. This function repairs most common errors. For example, using the map  from **rnaturalearth**, the **st_transform_repair()** function corrects for the new meridian.
 
 ```{r, warning=FALSE,message=FALSE}
-library("rnaturalearth")
-library("tidyverse")
-library("sf")
+library(rnaturalearth)
+library(tidyverse)
+library(sf)
+library(cowplot)
 
 world.sf <- ne_countries(scale = "medium", returnclass = "sf")
 
@@ -96,3 +97,40 @@ ggplot() + geom_sf(data=st_transform_outline(crs=new_crs), fill="lightblue") +
   geom_sf(data=new_graticule.sf, color="white", linewidth=0.3, alpha=0.7)
 ```
 
+### st_equal_grid()
+
+This function was inspired by Daniel Immerwahr's *How to Hide an Empire* (2019), in which he combines non-contiguous US states and territories, at the same scale. This  approach is useful for visualizing the relative sizes of geographically disparate state, countries, territories, etc. Following Immerwahr, let's show the continental US, Alaska, Hawaii, and the Philippines at the same scale. The **st_equal_grid()** function takes a list of **sf** objects, all with projected coordinates in the same units. You can (likely will want to) use different projections for different places, but they must all be in the same units
+
+```{r}
+library(spData)
+logo.sf <- us_states %>% 
+  st_transform("+proj=lcc +lon_0=-90 +lat_1=33 +lat_2=45") %>% 
+  st_union()## continental US
+alaska.sf <- alaska %>% 
+  st_transform("+proj=aea +lat_0=50 +lon_0=-154 +lat_1=55 +lat_2=65 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs") %>% st_union()
+hawaii.sf <- hawaii %>% st_transform("+proj=utm +zone=32") %>% st_union()
+
+world_ne.sf <- st_as_sf(ne_countries(scale="medium"))
+philippines.sf <- world_ne.sf %>% filter(sov_a3=="PHL") %>% st_union() %>% st_transform(3121) # https://epsg.io/3121
+
+places <- list(philippines.sf,logo.sf,alaska.sf,hawaii.sf)
+plot_list  <- st_equal_grid(places)
+```
+
+To visualize the plots in a grid, use the **cowplot** package
+
+```{r}
+cowplot::plot_grid(plotlist = plot_list, ncol = 4)
+```
+
+```{r}
+cowplot::plot_grid(plotlist = plot_list, ncol = 2)
+```
+
+Using a unprojected **sf** object will generate strange results
+
+```{r}
+bad_hawaii.sf <- hawaii.sf %>% st_transform((4326))
+places <- list(philippines.sf,logo.sf,alaska.sf,bad_hawaii.sf)
+plot_list  <- st_equal_grid(places)
+```
